@@ -24,95 +24,100 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
         title: const Text("Cadastrar Receita"),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // CARD DO TÍTULO
-            Card(
-              elevation: 2,
-              margin: const EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: TextField(
-                  controller: tituloController,
-                  decoration: const InputDecoration(
-                    labelText: "Título da Receita",
-                    border: OutlineInputBorder(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // CARD DO TÍTULO
+              Card(
+                elevation: 2,
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: TextField(
+                    controller: tituloController,
+                    decoration: const InputDecoration(
+                      labelText: "Título da Receita",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // FORMULÁRIO DO PASSO
-            Card(
-              elevation: 2,
-              margin: const EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: descricaoController,
-                      decoration: const InputDecoration(
-                        labelText: "Descrição do passo",
-                        border: OutlineInputBorder(),
+              // FORMULÁRIO DO PASSO
+              Card(
+                elevation: 2,
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: descricaoController,
+                        decoration: const InputDecoration(
+                          labelText: "Descrição do passo",
+                          border: OutlineInputBorder(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                    TextField(
-                      controller: repeticoesController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: "Repetições",
-                        border: OutlineInputBorder(),
+                      TextField(
+                        controller: repeticoesController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: "Repetições",
+                          border: OutlineInputBorder(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: const Text("Adicionar Passo"),
-                        onPressed: () {
-                          final descricao = descricaoController.text.trim();
-                          final repeticoes =
-                              int.tryParse(repeticoesController.text.trim()) ?? 0;
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: const Text("Adicionar Passo"),
+                          onPressed: () {
+                            final descricao = descricaoController.text.trim();
+                            final repeticoes =
+                                int.tryParse(repeticoesController.text.trim()) ?? 0;
 
-                          if (descricao.isEmpty || repeticoes <= 0) return;
+                            if (descricao.isEmpty || repeticoes <= 0) return;
 
-                          receitaState.adicionarPasso(
-                            ReceitaPasso(
-                              descricao: descricao,
-                              repeticoes: repeticoes,
-                            ),
-                          );
+                            receitaState.adicionarPasso(
+                              ReceitaPasso(
+                                descricao: descricao,
+                                repeticoes: repeticoes,
+                              ),
+                            );
 
-                          descricaoController.clear();
-                          repeticoesController.clear();
-                        },
+                            descricaoController.clear();
+                            repeticoesController.clear();
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // LISTA DE PASSOS
-            Expanded(
-              child: Card(
+              // LISTA DE PASSOS (com shrinkWrap para evitar conflito de tamanho)
+              Card(
                 elevation: 2,
                 child: receitaState.passosTemp.isEmpty
-                    ? const Center(
-                        child: Text(
-                          "Nenhum passo adicionado ainda",
-                          style: TextStyle(color: Colors.grey),
+                    ? const SizedBox(
+                        height: 120,
+                        child: Center(
+                          child: Text(
+                            "Nenhum passo adicionado ainda",
+                            style: TextStyle(color: Colors.grey),
+                          ),
                         ),
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(8),
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: receitaState.passosTemp.length,
                         itemBuilder: (_, index) {
                           final passo = receitaState.passosTemp[index];
@@ -125,28 +130,28 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
                         },
                       ),
               ),
-            ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            // BOTÃO SALVAR
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                icon: const Icon(Icons.save),
-                label: const Text("Salvar Receita"),
-                onPressed: () {
-                  final titulo = tituloController.text.trim();
-                  if (titulo.isEmpty) return;
+              // BOTÃO SALVAR
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.save),
+                  label: const Text("Salvar Receita"),
+                  onPressed: () {
+                    final titulo = tituloController.text.trim();
+                    if (titulo.isEmpty) return;
 
-                  receitaState.salvarReceita(titulo);
+                    receitaState.salvarReceita(titulo);
 
-                  // Limpa tudo
-                  tituloController.clear();
-                },
+                    // Limpa tudo
+                    tituloController.clear();
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

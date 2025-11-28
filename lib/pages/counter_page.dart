@@ -69,7 +69,10 @@ class CounterPage extends StatelessWidget {
                 ),
                 trailing: IconButton(
                   icon: const Icon(Icons.play_arrow, color: Colors.green),
-                  onPressed: () {
+                  onPressed: () async {
+                    // Carrega a receita no receitaState também!
+                    await receitaState.carregarReceitaParaEdicao(receita.id!);
+                    
                     final passos = receita.passos
                         .map((p) => StepData(
                               descricao: p.descricao,
@@ -93,13 +96,54 @@ class CounterPage extends StatelessWidget {
     // =====================================================
     // 2) RECEITA CARREGADA → MOSTRAR CONTADOR
     // =====================================================
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(),
-
-          Text(
+    return Column(
+      children: [
+        // Barra superior com botões de navegação
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () async {
+                  // Salva e volta para a lista de receitas
+                  await receitaState.atualizarProgressoCompleto(
+                    appState.currentStepIndex,
+                    appState.repeticoesFeitasNoPasso,
+                  );
+                  await receitaState.limparReceitaEmEdicao();
+                  appState.reset();
+                  if (context.mounted) {
+                    Navigator.pushNamedAndRemoveUntil(context, "/", (route) => false);
+                  }
+                },
+                icon: const Icon(Icons.arrow_back),
+                label: const Text("Voltar"),
+              ),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  // Salva e sai da tela
+                  await receitaState.atualizarProgressoCompleto(
+                    appState.currentStepIndex,
+                    appState.repeticoesFeitasNoPasso,
+                  );
+                  await receitaState.limparReceitaEmEdicao();
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                  }
+                },
+                icon: const Icon(Icons.exit_to_app),
+                label: const Text("Sair"),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
             appState.currentRecipeTitle,
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
@@ -131,7 +175,14 @@ class CounterPage extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: (appState.repeticoesFeitasNoPasso > 0 ||
                         appState.currentStepIndex > 0)
-                    ? appState.voltarRepeticao
+                    ? () async {
+                        appState.voltarRepeticao();
+                        // Salva progresso completo no BD (passo + repetições)
+                        await receitaState.atualizarProgressoCompleto(
+                          appState.currentStepIndex,
+                          appState.repeticoesFeitasNoPasso,
+                        );
+                      }
                     : null,
                 icon: const Icon(Icons.navigate_before),
                 label: const Text("Voltar"),
@@ -140,7 +191,14 @@ class CounterPage extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: (appState.currentStepIndex < appState.passos.length - 1 ||
                         appState.repeticoesFeitasNoPasso < passoAtual.repeticoes)
-                    ? appState.avancarRepeticao
+                    ? () async {
+                        appState.avancarRepeticao();
+                        // Salva progresso completo no BD (passo + repetições)
+                        await receitaState.atualizarProgressoCompleto(
+                          appState.currentStepIndex,
+                          appState.repeticoesFeitasNoPasso,
+                        );
+                      }
                     : null,
                 icon: const Icon(Icons.navigate_next),
                 label: const Text("Avançar"),
@@ -152,22 +210,48 @@ class CounterPage extends StatelessWidget {
 
           if (appState.currentStepIndex == appState.passos.length - 1 &&
               appState.repeticoesFeitasNoPasso == passoAtual.repeticoes)
-            const Text(
-              "Receita concluída! 🎉",
-              style: TextStyle(fontSize: 20, color: Colors.green),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  const Text(
+                    "Receita concluída! 🎉",
+                    style: TextStyle(fontSize: 20, color: Colors.green, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      // Marca como concluída no BD
+                      if (receitaState.receitaEmEdicao != null) {
+                        await receitaState.marcarComoConcluida(
+                          receitaState.receitaEmEdicao!.id!,
+                        );
+                      }
+                      // Volta para a home
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.check_circle),
+                    label: const Text("Finalizar"),
+                  ),
+                ],
+              ),
             ),
-
-          const Spacer(),
-
-          ElevatedButton.icon(
-            onPressed: appState.reset,
-            icon: const Icon(Icons.refresh),
-            label: const Text("Zerar receita"),
+              ],
+            ),
           ),
-
-          const Spacer(),
-        ],
-      ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: appState.reset,
+              icon: const Icon(Icons.refresh),
+              label: const Text("Zerar receita"),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

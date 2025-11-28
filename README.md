@@ -112,3 +112,8 @@ Widget reutilizável que mostra o contador em um cartão estilizado.
 - mantém a interface organizada separando componentes
 
 ---
+
+Gerar apk:
+```
+flutter build apk --release --split-per-abi
+```

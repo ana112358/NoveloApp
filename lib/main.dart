@@ -28,29 +28,33 @@ class MyApp extends StatelessWidget {
             title: 'Contador App',
             debugShowCheckedModeBanner: false,
             themeMode: themeState.themeMode,
+
+            //Modo claro
             theme: ThemeData(
               useMaterial3: true,
-              scaffoldBackgroundColor: const Color.fromARGB(255, 224, 230, 237),
+              scaffoldBackgroundColor: const Color(0xFFFFFFFF),
               colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color.fromARGB(255, 255, 189, 6),
+                seedColor: const Color(0xFF4C5760),
                 brightness: Brightness.light,
-                primary: const Color.fromARGB(255, 255, 189, 6),
-                onPrimary: const Color.fromARGB(255, 16, 42, 67),
-                secondary: const Color.fromARGB(255, 0, 60, 129),
-                onSecondary: Colors.white,
-                tertiary: const Color.fromARGB(255, 48, 173, 158),
-                surface: Colors.white,
-                onSurface: const Color.fromARGB(255, 16, 42, 67),
-                error: const Color.fromARGB(255, 231, 111, 81),
+                //Principais
+                primary: const Color(0xFF4C5760),
+                onPrimary: const Color(0xFFD7CEB2),
+                secondary: const Color(0xFFD7CEB2),
+                onSecondary: Color(0xFFFFFFFF),
+                tertiary: const Color(0xFF84D9D9),
+                surface: Color(0xFFDBC5C6),
+                error: const Color(0xFFB4553E),
               ),
+
+              //App bar
               appBarTheme: const AppBarTheme(
-                backgroundColor: Color.fromARGB(255, 0, 60, 129),
-                foregroundColor: Colors.white,
+                backgroundColor: Color(0xFFB4553E),
+                foregroundColor: Color(0xFFFFFFFF),
                 centerTitle: true,
               ),
             ),
 
-            //modo escuro
+            //Modo escuro
             darkTheme: ThemeData(
               useMaterial3: true,
               scaffoldBackgroundColor: const Color.fromARGB(255, 16, 42, 67),

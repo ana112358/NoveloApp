@@ -42,7 +42,8 @@ class _HomePageState extends State<HomePage> {
     }
 
     final mainArea = ColoredBox(
-      color: colorScheme.surface,
+      //cor da troca de tela:
+      color: colorScheme.onSecondary,
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
         child: page,
@@ -54,8 +55,10 @@ class _HomePageState extends State<HomePage> {
         onPressed: () {
           context.read<ThemeState>().toggleTheme();
         },
-        backgroundColor: colorScheme.tertiary,
-        foregroundColor: colorScheme.surface,
+        //Cores do toggle modo claro/escuro
+        backgroundColor: colorScheme.onSecondary,
+        foregroundColor: colorScheme.error,
+        shape: const CircleBorder(),
         child: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
@@ -72,13 +75,15 @@ class _HomePageState extends State<HomePage> {
                     onTap: (value) {
                       setState(() => selectedIndex = value);
                     },
-                    backgroundColor: colorScheme.surface,
+                    type: BottomNavigationBarType.fixed,
+                    //cores do menu
+                    backgroundColor: colorScheme.primary,
                     selectedItemColor: colorScheme.secondary,
-                    unselectedItemColor: colorScheme.primary,
+                    unselectedItemColor: colorScheme.tertiary,
                     items: const [
                       BottomNavigationBarItem(
                         icon: Icon(Icons.calculate),
-                        label: 'Vamos crochetar?',
+                        label: 'Crochetando',
                       ),
                       BottomNavigationBarItem(
                         icon: Icon(Icons.history),
@@ -108,13 +113,20 @@ class _HomePageState extends State<HomePage> {
                   selectedIndex: selectedIndex,
                   onDestinationSelected: (value) =>
                       setState(() => selectedIndex = value),
-                  backgroundColor: colorScheme.surface,
+                  //cores do menu
+                  backgroundColor: colorScheme.primary,
+
                   trailing: Expanded(
                     child: Align(
                       alignment: Alignment.bottomCenter,
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 20),
                         child: IconButton(
+                          //estilo do toggle button
+                          style: IconButton.styleFrom(
+                            backgroundColor: colorScheme.onSecondary,
+                            foregroundColor: colorScheme.primary,
+                          ),
                           icon:
                               Icon(isDark ? Icons.light_mode : Icons.dark_mode),
                           onPressed: () =>
@@ -128,12 +140,12 @@ class _HomePageState extends State<HomePage> {
                     fontWeight: FontWeight.bold,
                   ),
                   unselectedLabelTextStyle: TextStyle(
-                    color: colorScheme.primary,
+                    color: colorScheme.tertiary,
                   ),
                   destinations: const [
                     NavigationRailDestination(
                       icon: Icon(Icons.calculate),
-                      label: Text('Vamos crochetar?'),
+                      label: Text('Crochetando'),
                     ),
                     NavigationRailDestination(
                       icon: Icon(Icons.history),

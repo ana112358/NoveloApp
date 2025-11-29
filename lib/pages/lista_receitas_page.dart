@@ -11,6 +11,8 @@ class ListaReceitasPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final receitaState = context.watch<ReceitaState>();
     final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: const Text("Receitas Salvas")),
@@ -19,7 +21,7 @@ class ListaReceitasPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  //estilo ícone nenhuma receita salva
+                  //estilo ícone 'nenhuma receita salva'
                   Icon(Icons.gesture, size: 80, color: colorScheme.tertiary),
                   const SizedBox(height: 20),
                   Text(
@@ -80,10 +82,13 @@ class ListaReceitasPage extends StatelessWidget {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(4),
                                 child: LinearProgressIndicator(
-                                    value: progresso,
-                                    minHeight: 6,
-                                    color: colorScheme.primary,
-                                    backgroundColor: colorScheme.onSecondary),
+                                  value: progresso,
+                                  minHeight: 6,
+                                  color: isDark
+                                      ? colorScheme.tertiary
+                                      : colorScheme.primary,
+                                  backgroundColor: colorScheme.onSecondary,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -103,14 +108,14 @@ class ListaReceitasPage extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: colorScheme.onSecondary,
+                                color: colorScheme.primary,
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: Text(
                                 "Concluída",
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: colorScheme.primary,
+                                  color: colorScheme.tertiary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -122,6 +127,11 @@ class ListaReceitasPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
+                          //estilo botão deletar:
+                          style: IconButton.styleFrom(
+                            backgroundColor: colorScheme.onSecondary,
+                            foregroundColor: colorScheme.error,
+                          ),
                           icon: Icon(Icons.delete, color: colorScheme.error),
                           onPressed: () => _confirmarDelecao(
                               context, receitaState, receita.id!),
@@ -129,7 +139,7 @@ class ListaReceitasPage extends StatelessWidget {
                         IconButton(
                           //estilo botão play:
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.white,
+                            backgroundColor: colorScheme.primary,
                             foregroundColor: colorScheme.tertiary,
                           ),
 

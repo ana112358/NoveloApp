@@ -28,13 +28,20 @@ class CounterPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.receipt_long, size: 80, color: colorScheme.error),
+              //estilo do ícone
+              Icon(Icons.receipt_long, size: 80, color: colorScheme.tertiary),
+
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 "Nenhuma receita cadastrada ainda",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                //estilo do texto
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.error),
                 textAlign: TextAlign.center,
               ),
+
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: () {
@@ -42,6 +49,27 @@ class CounterPage extends StatelessWidget {
                 },
                 icon: const Icon(Icons.add),
                 label: const Text("Cadastrar receita"),
+                style: ButtonStyle(
+                  // cores do botão
+                  backgroundColor:
+                      WidgetStateProperty.all(colorScheme.secondary),
+                  foregroundColor: WidgetStateProperty.all(colorScheme.primary),
+
+                  // cores do hover
+                  overlayColor:
+                      WidgetStateProperty.resolveWith<Color?>((states) {
+                    if (states.contains(WidgetState.hovered)) {
+                      return colorScheme.surface.withValues(alpha: 0.4);
+                    }
+                    if (states.contains(WidgetState.pressed)) {
+                      return colorScheme.surface.withValues(alpha: 0.4);
+                    }
+                    return null;
+                  }),
+
+                  padding: WidgetStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16)),
+                ),
               ),
             ],
           ),
@@ -59,21 +87,44 @@ class CounterPage extends StatelessWidget {
             itemBuilder: (_, i) {
               final receita = receitaState.receitas[i];
 
+              //para alternar as cores dos cards:
+              final Color cardColor =
+                  (i % 2 == 0) ? colorScheme.secondary : colorScheme.surface;
+
               int totalRepeticoes = receita.passos.fold(
                 0,
                 (sum, passo) => sum + passo.repeticoes,
               );
 
               return Card(
+                //cor do card:
+                color: cardColor,
+                surfaceTintColor: Colors.transparent,
+
                 child: ListTile(
-                  title: Text(receita.titulo),
+                  title: Text(
+                    receita.titulo,
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                   subtitle: Text(
                     "${receita.passos.length} passos • Total de repetições: $totalRepeticoes",
+                    style: TextStyle(color: colorScheme.primary),
                   ),
                   trailing: IconButton(
-                    icon: Icon(Icons.play_arrow, color: colorScheme.tertiary),
+                    //estilo botão play:
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: colorScheme.tertiary,
+                    ),
+
+                    icon: Icon(Icons.play_arrow),
+
                     onPressed: () async {
-                      // Carrega a receita no receitaState também!
+                      // Carrega a receita no receitaState
                       await receitaState.carregarReceitaParaEdicao(receita.id!);
 
                       final passos = receita.passos
@@ -125,6 +176,28 @@ class CounterPage extends StatelessWidget {
                   },
                   icon: const Icon(Icons.arrow_back),
                   label: const Text("Voltar"),
+                  style: ButtonStyle(
+                    // cores do botão
+                    backgroundColor:
+                        WidgetStateProperty.all(colorScheme.secondary),
+                    foregroundColor:
+                        WidgetStateProperty.all(colorScheme.primary),
+
+                    // cores do hover
+                    overlayColor:
+                        WidgetStateProperty.resolveWith<Color?>((states) {
+                      if (states.contains(WidgetState.hovered)) {
+                        return colorScheme.tertiary.withValues(alpha: 0.4);
+                      }
+                      if (states.contains(WidgetState.pressed)) {
+                        return colorScheme.tertiary.withValues(alpha: 0.8);
+                      }
+                      return null;
+                    }),
+
+                    padding: WidgetStateProperty.all(const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10)),
+                  ),
                 ),
                 ElevatedButton.icon(
                   onPressed: () async {
@@ -140,6 +213,28 @@ class CounterPage extends StatelessWidget {
                   },
                   icon: const Icon(Icons.exit_to_app),
                   label: const Text("Sair"),
+                  style: ButtonStyle(
+                    // cores do botão
+                    backgroundColor:
+                        WidgetStateProperty.all(colorScheme.secondary),
+                    foregroundColor:
+                        WidgetStateProperty.all(colorScheme.primary),
+
+                    // cores do hover
+                    overlayColor:
+                        WidgetStateProperty.resolveWith<Color?>((states) {
+                      if (states.contains(WidgetState.hovered)) {
+                        return colorScheme.tertiary.withValues(alpha: 0.4);
+                      }
+                      if (states.contains(WidgetState.pressed)) {
+                        return colorScheme.tertiary.withValues(alpha: 0.8);
+                      }
+                      return null;
+                    }),
+
+                    padding: WidgetStateProperty.all(const EdgeInsets.symmetric(
+                        horizontal: 25, vertical: 10)),
+                  ),
                 ),
               ],
             ),
@@ -151,27 +246,39 @@ class CounterPage extends StatelessWidget {
                 children: [
                   Text(
                     appState.currentRecipeTitle,
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 32,
+                        color: colorScheme.error,
+                        fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
+                  const SizedBox(height: 16),
+                  Text(
                     "Passo atual:",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 18),
                   Text(
                     passoAtual.descricao,
-                    style: const TextStyle(
-                        fontSize: 28, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 18),
                   Text(
                     "Repetição ${appState.repeticoesFeitasNoPasso} / ${passoAtual.repeticoes}",
-                    style: const TextStyle(fontSize: 18),
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: colorScheme.primary,
+                    ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -188,9 +295,34 @@ class CounterPage extends StatelessWidget {
                               }
                             : null,
                         icon: const Icon(Icons.navigate_before),
-                        label: const Text("Voltar"),
+                        label: const Text("Retornar"),
+                        style: ButtonStyle(
+                          // cores do botão
+                          backgroundColor:
+                              WidgetStateProperty.all(colorScheme.surface),
+                          foregroundColor:
+                              WidgetStateProperty.all(colorScheme.primary),
+
+                          // cores do hover
+                          overlayColor:
+                              WidgetStateProperty.resolveWith<Color?>((states) {
+                            if (states.contains(WidgetState.hovered)) {
+                              return colorScheme.secondary
+                                  .withValues(alpha: 0.4);
+                            }
+                            if (states.contains(WidgetState.pressed)) {
+                              return colorScheme.secondary
+                                  .withValues(alpha: 0.8);
+                            }
+                            return null;
+                          }),
+
+                          padding: WidgetStateProperty.all(
+                              const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 12)),
+                        ),
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: 18),
                       ElevatedButton.icon(
                         onPressed: (appState.currentStepIndex <
                                     appState.passos.length - 1 ||
@@ -207,40 +339,101 @@ class CounterPage extends StatelessWidget {
                             : null,
                         icon: const Icon(Icons.navigate_next),
                         label: const Text("Avançar"),
+                        style: ButtonStyle(
+                          // cores do botão
+                          backgroundColor:
+                              WidgetStateProperty.all(colorScheme.tertiary),
+                          foregroundColor:
+                              WidgetStateProperty.all(colorScheme.primary),
+
+                          // cores do hover
+                          overlayColor:
+                              WidgetStateProperty.resolveWith<Color?>((states) {
+                            if (states.contains(WidgetState.hovered)) {
+                              return colorScheme.secondary
+                                  .withValues(alpha: 0.4);
+                            }
+                            if (states.contains(WidgetState.pressed)) {
+                              return colorScheme.secondary
+                                  .withValues(alpha: 0.8);
+                            }
+                            return null;
+                          }),
+
+                          padding: WidgetStateProperty.all(
+                              const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 12)),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   if (appState.currentStepIndex == appState.passos.length - 1 &&
                       appState.repeticoesFeitasNoPasso == passoAtual.repeticoes)
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          const Text(
+                          Text(
                             "Receita concluída! 🎉",
                             style: TextStyle(
                                 fontSize: 20,
-                                color: Colors.green,
+                                color: colorScheme.error,
                                 fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(height: 12),
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              // Marca como concluída no BD
-                              if (receitaState.receitaEmEdicao != null) {
-                                await receitaState.marcarComoConcluida(
-                                  receitaState.receitaEmEdicao!.id!,
-                                );
-                              }
+                          const SizedBox(height: 25),
+                          SizedBox(
+                            width: double
+                                .infinity, // Ocupa toda a largura disponível
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                // Marca como concluída no BD
+                                if (receitaState.receitaEmEdicao != null) {
+                                  await receitaState.marcarComoConcluida(
+                                    receitaState.receitaEmEdicao!.id!,
+                                  );
+                                }
 
-                              if (!context.mounted) return;
+                                if (!context.mounted) return;
 
-                              // Volta para a home
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(Icons.check_circle),
-                            label: const Text("Finalizar"),
+                                // Volta para a home
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(Icons.check_circle),
+                              label: const Text("Finalizar"),
+                              style: ButtonStyle(
+                                // cores do botão
+                                backgroundColor: WidgetStateProperty.all(
+                                    colorScheme.secondary),
+                                foregroundColor: WidgetStateProperty.all(
+                                    colorScheme.primary),
+
+                                // cores do hover
+                                overlayColor:
+                                    WidgetStateProperty.resolveWith<Color?>(
+                                        (states) {
+                                  if (states.contains(WidgetState.hovered)) {
+                                    return colorScheme.tertiary
+                                        .withValues(alpha: 0.4);
+                                  }
+                                  if (states.contains(WidgetState.pressed)) {
+                                    return colorScheme.tertiary
+                                        .withValues(alpha: 0.8);
+                                  }
+                                  return null;
+                                }),
+
+                                textStyle: WidgetStateProperty.all(
+                                  const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+
+                                padding: WidgetStateProperty.all(
+                                    const EdgeInsets.symmetric(vertical: 12)),
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -257,6 +450,34 @@ class CounterPage extends StatelessWidget {
                 onPressed: appState.reset,
                 icon: const Icon(Icons.refresh),
                 label: const Text("Zerar receita"),
+                style: ButtonStyle(
+                  // cores do botão
+                  backgroundColor: WidgetStateProperty.all(colorScheme.error),
+                  foregroundColor:
+                      WidgetStateProperty.all(colorScheme.onSecondary),
+
+                  // cores do hover
+                  overlayColor:
+                      WidgetStateProperty.resolveWith<Color?>((states) {
+                    if (states.contains(WidgetState.hovered)) {
+                      return colorScheme.secondary.withValues(alpha: 0.4);
+                    }
+                    if (states.contains(WidgetState.pressed)) {
+                      return colorScheme.secondary.withValues(alpha: 0.8);
+                    }
+                    return null;
+                  }),
+
+                  textStyle: WidgetStateProperty.all(
+                    const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+
+                  padding: WidgetStateProperty.all(
+                      const EdgeInsets.symmetric(vertical: 12)),
+                ),
               ),
             ),
           ),

@@ -25,8 +25,9 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     final receitaState = context.watch<ReceitaState>();
-    final theme = Theme.of(context);
     final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     // Filtra receitas com progresso (começa 0 de 0 não mostra)
     final receitasComProgresso =
@@ -139,14 +140,14 @@ class _HistoryPageState extends State<HistoryPage> {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: colorScheme.onSecondary,
+                                    color: colorScheme.primary,
                                     borderRadius: BorderRadius.circular(15),
                                   ),
                                   child: Text(
                                     "✓ Concluída",
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: colorScheme.primary,
+                                      color: colorScheme.tertiary,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -162,7 +163,9 @@ class _HistoryPageState extends State<HistoryPage> {
                                   child: LinearProgressIndicator(
                                       value: porcentagem,
                                       minHeight: 8,
-                                      color: colorScheme.primary,
+                                      color: isDark
+                                          ? colorScheme.tertiary
+                                          : colorScheme.primary,
                                       backgroundColor: colorScheme.onSecondary),
                                 ),
                               ),
@@ -222,8 +225,8 @@ class _HistoryPageState extends State<HistoryPage> {
                 //estilo:
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(colorScheme.error),
-                  foregroundColor:
-                      WidgetStateProperty.all(colorScheme.onSecondary),
+                  foregroundColor: WidgetStateProperty.all(
+                      isDark ? colorScheme.primary : colorScheme.onSecondary),
 
                   padding: WidgetStateProperty.all(
                     const EdgeInsets.symmetric(vertical: 16),
@@ -261,7 +264,12 @@ class _HistoryPageState extends State<HistoryPage> {
                       actions: [
                         TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancelar')),
+                            child: Text('Cancelar',
+                                style: TextStyle(
+                                    color: isDark
+                                        ? colorScheme.surface
+                                        : colorScheme.primary,
+                                    fontWeight: FontWeight.bold))),
                         TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
                             child: Text(

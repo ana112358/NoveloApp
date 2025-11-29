@@ -18,6 +18,19 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
   @override
   Widget build(BuildContext context) {
     final receitaState = context.watch<ReceitaState>();
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final inputDecoration = InputDecoration(
+      border: const OutlineInputBorder(),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: colorScheme.outline),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: colorScheme.tertiary, width: 2.0),
+      ),
+      // Cor do rótulo quando focado
+      floatingLabelStyle: TextStyle(color: colorScheme.tertiary),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -31,13 +44,18 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
             children: [
               // CARD DO TÍTULO
               Card(
-                elevation: 2,
+                elevation: 4,
+                shadowColor:
+                    colorScheme.shadow.withOpacity(0.2), // Sombra suave
+                color: colorScheme
+                    .surface, // Fundo do Card (Branco no Day, Cinza no Night)
+                surfaceTintColor: Colors.transparent,
                 margin: const EdgeInsets.only(bottom: 16),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: TextField(
                     controller: tituloController,
-                    decoration: const InputDecoration(
+                    decoration: inputDecoration.copyWith(
                       labelText: "Título da Receita",
                       border: OutlineInputBorder(),
                     ),
@@ -47,7 +65,10 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
 
               // FORMULÁRIO DO PASSO
               Card(
-                elevation: 2,
+                elevation: 4,
+                shadowColor: colorScheme.shadow.withOpacity(0.2),
+                color: colorScheme.surface,
+                surfaceTintColor: Colors.transparent,
                 margin: const EdgeInsets.only(bottom: 16),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -55,32 +76,36 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
                     children: [
                       TextField(
                         controller: descricaoController,
-                        decoration: const InputDecoration(
+                        decoration: inputDecoration.copyWith(
                           labelText: "Descrição do passo",
                           border: OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 12),
-
                       TextField(
                         controller: repeticoesController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
+                        decoration: inputDecoration.copyWith(
                           labelText: "Repetições",
                           border: OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 12),
-
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton.icon(
                           icon: const Icon(Icons.add),
                           label: const Text("Adicionar Passo"),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor:
+                                colorScheme.onPrimary, // Texto branco
+                          ),
                           onPressed: () {
                             final descricao = descricaoController.text.trim();
-                            final repeticoes =
-                                int.tryParse(repeticoesController.text.trim()) ?? 0;
+                            final repeticoes = int.tryParse(
+                                    repeticoesController.text.trim()) ??
+                                0;
 
                             if (descricao.isEmpty || repeticoes <= 0) return;
 
@@ -103,14 +128,20 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
 
               // LISTA DE PASSOS (com shrinkWrap para evitar conflito de tamanho)
               Card(
-                elevation: 2,
+                elevation: 4,
+                color: colorScheme.surface, // Fundo branco/cinza
+                surfaceTintColor: Colors.transparent,
                 child: receitaState.passosTemp.isEmpty
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 120,
                         child: Center(
                           child: Text(
                             "Nenhum passo adicionado ainda",
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(
+                              color: colorScheme.outline, // Cinza do tema
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       )
@@ -122,6 +153,8 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
                         itemBuilder: (_, index) {
                           final passo = receitaState.passosTemp[index];
                           return Card(
+                            color: colorScheme.surfaceContainerHighest,
+                            margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
                               title: Text(passo.descricao),
                               subtitle: Text("${passo.repeticoes} repetições"),
@@ -139,6 +172,14 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
                 child: FilledButton.icon(
                   icon: const Icon(Icons.save),
                   label: const Text("Salvar Receita"),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colorScheme.tertiary,
+                    foregroundColor: colorScheme.onPrimary, // Texto Azul Escuro
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 16), // Mais alto
+                    textStyle: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   onPressed: () {
                     final titulo = tituloController.text.trim();
                     if (titulo.isEmpty) return;

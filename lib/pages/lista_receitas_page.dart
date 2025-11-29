@@ -9,12 +9,19 @@ class ListaReceitasPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final receitaState = context.watch<ReceitaState>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: const Text("Receitas Salvas")),
       body: receitaState.receitas.isEmpty
-          ? const Center(
-              child: Text("Nenhuma receita salva ainda."),
+          ? Center(
+              child: Text(
+                "Nenhuma receita salva ainda.",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             )
           : ListView.builder(
               padding: const EdgeInsets.all(12),
@@ -23,10 +30,10 @@ class ListaReceitasPage extends StatelessWidget {
                 final receita = receitaState.receitas[i];
 
                 // Calcula total de repetições e progresso
-                int totalRepeticoes = receita.passos.fold(
-                    0, (sum, passo) => sum + passo.repeticoes);
-                double progresso = receita.passos.isEmpty 
-                    ? 0.0 
+                int totalRepeticoes = receita.passos
+                    .fold(0, (sum, passo) => sum + passo.repeticoes);
+                double progresso = receita.passos.isEmpty
+                    ? 0.0
                     : (receita.passoAtual + 1) / receita.passos.length;
 
                 return Card(
@@ -62,16 +69,17 @@ class ListaReceitasPage extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.green.shade100,
+                                color: colorScheme.tertiary,
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: const Text(
+                              child: Text(
                                 "Concluída",
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.green,
+                                  color: colorScheme.tertiary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -83,32 +91,41 @@ class ListaReceitasPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _confirmarDelecao(context, receitaState, receita.id!),
+                          icon: Icon(Icons.delete, color: colorScheme.error),
+                          onPressed: () => _confirmarDelecao(
+                              context, receitaState, receita.id!),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.play_arrow, color: Colors.green),
+                          icon: Icon(Icons.play_arrow,
+                              color: colorScheme.tertiary),
                           onPressed: () async {
                             if (receita.passos.isNotEmpty) {
                               // Carrega a receita mais recente do BD
-                              await receitaState.carregarReceitaParaEdicao(receita.id!);
-                              
+                              await receitaState
+                                  .carregarReceitaParaEdicao(receita.id!);
+
                               // Carrega a receita no contador
                               final passos = receita.passos
-                                  .map((p) =>
-                                      StepData(descricao: p.descricao, repeticoes: p.repeticoes))
+                                  .map((p) => StepData(
+                                      descricao: p.descricao,
+                                      repeticoes: p.repeticoes))
                                   .toList();
-                              
+
                               if (context.mounted) {
                                 context.read<CounterAppState>().carregarReceita(
                                       titulo: receita.titulo,
                                       passos: passos,
                                     );
-                                
+
                                 // Restaura o progresso (passo atual e repetições feitas)
-                                context.read<CounterAppState>().currentStepIndex = receita.passoAtual;
-                                context.read<CounterAppState>().repeticoesFeitasNoPasso = receita.repeticoesFeitasNoPasso;
-                                
+                                context
+                                    .read<CounterAppState>()
+                                    .currentStepIndex = receita.passoAtual;
+                                context
+                                        .read<CounterAppState>()
+                                        .repeticoesFeitasNoPasso =
+                                    receita.repeticoesFeitasNoPasso;
+
                                 Navigator.pushNamed(context, "/");
                               }
                             }
@@ -123,7 +140,10 @@ class ListaReceitasPage extends StatelessWidget {
     );
   }
 
-  void _confirmarDelecao(BuildContext context, ReceitaState state, int receitaId) {
+  void _confirmarDelecao(
+      BuildContext context, ReceitaState state, int receitaId) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -139,7 +159,7 @@ class ListaReceitasPage extends StatelessWidget {
               state.excluirReceita(receitaId);
               Navigator.pop(ctx);
             },
-            child: const Text("Deletar", style: TextStyle(color: Colors.red)),
+            child: Text("Deletar", style: TextStyle(color: colorScheme.error)),
           ),
         ],
       ),

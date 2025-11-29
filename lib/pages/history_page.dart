@@ -42,15 +42,14 @@ class _HistoryPageState extends State<HistoryPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.history,
-              size: 80,
-              color: colorScheme.error,
-            ),
+            Icon(Icons.history, size: 80, color: colorScheme.tertiary),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Nenhuma receita em progresso',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: colorScheme.error),
               textAlign: TextAlign.center,
             ),
           ],
@@ -67,10 +66,6 @@ class _HistoryPageState extends State<HistoryPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text(
-              'Histórico de Receitas',
-              style: theme.textTheme.headlineSmall,
-            ),
           ),
           Expanded(
             child: ListView.builder(
@@ -81,6 +76,11 @@ class _HistoryPageState extends State<HistoryPage> {
                 final porcentagem = receita.passos.isEmpty
                     ? 0.0
                     : (receita.passoAtual + 1) / receita.passos.length;
+
+                //para alternar as cores dos cards:
+                final Color cardColor = (index % 2 == 0)
+                    ? colorScheme.secondary
+                    : colorScheme.surface;
 
                 return GestureDetector(
                   onTap: () {
@@ -108,6 +108,11 @@ class _HistoryPageState extends State<HistoryPage> {
                   },
                   child: Card(
                     margin: const EdgeInsets.only(bottom: 12),
+
+                    //cor do card:
+                    color: cardColor,
+                    surfaceTintColor: Colors.transparent,
+
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(
@@ -119,7 +124,11 @@ class _HistoryPageState extends State<HistoryPage> {
                               Expanded(
                                 child: Text(
                                   receita.titulo,
-                                  style: theme.textTheme.titleMedium,
+                                  style: TextStyle(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
@@ -130,14 +139,14 @@ class _HistoryPageState extends State<HistoryPage> {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: colorScheme.tertiary,
-                                    borderRadius: BorderRadius.circular(4),
+                                    color: colorScheme.onSecondary,
+                                    borderRadius: BorderRadius.circular(15),
                                   ),
                                   child: Text(
                                     "✓ Concluída",
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      color: colorScheme.tertiary,
+                                      fontSize: 14,
+                                      color: colorScheme.primary,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -151,15 +160,18 @@ class _HistoryPageState extends State<HistoryPage> {
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(4),
                                   child: LinearProgressIndicator(
-                                    value: porcentagem,
-                                    minHeight: 8,
-                                  ),
+                                      value: porcentagem,
+                                      minHeight: 8,
+                                      color: colorScheme.primary,
+                                      backgroundColor: colorScheme.onSecondary),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 "${(porcentagem * 100).toStringAsFixed(0)}%",
-                                style: const TextStyle(
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: colorScheme.primary,
                                     fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -167,20 +179,29 @@ class _HistoryPageState extends State<HistoryPage> {
                           const SizedBox(height: 8),
                           Text(
                             "Passo ${receita.passoAtual + 1}/${receita.passos.length}",
-                            style: theme.textTheme.bodySmall,
+                            style: TextStyle(
+                              color: colorScheme.primary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
+                          const SizedBox(height: 4),
                           if (receita.dataInicio != null)
                             Text(
                               "Iniciada em: ${_formatarData(receita.dataInicio!)}",
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: Colors.grey,
+                              style: TextStyle(
+                                color: colorScheme.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.normal,
                               ),
                             ),
                           if (receita.dataUltimaAtualizacao != null)
                             Text(
                               "Última atualização: ${_formatarData(receita.dataUltimaAtualizacao!)}",
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: Colors.grey,
+                              style: TextStyle(
+                                color: colorScheme.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.normal,
                               ),
                             ),
                         ],
@@ -191,16 +212,50 @@ class _HistoryPageState extends State<HistoryPage> {
               },
             ),
           ),
+
+          //botão limpar histórico
           Padding(
             padding: const EdgeInsets.all(16),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                //estilo:
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(colorScheme.error),
+                  foregroundColor:
+                      WidgetStateProperty.all(colorScheme.onSecondary),
+
+                  padding: WidgetStateProperty.all(
+                    const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  textStyle: WidgetStateProperty.all(
+                    const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  // hover
+                  overlayColor:
+                      WidgetStateProperty.resolveWith<Color?>((states) {
+                    if (states.contains(WidgetState.hovered)) {
+                      return colorScheme.secondary.withValues(alpha: 0.4);
+                    }
+                    if (states.contains(WidgetState.pressed)) {
+                      return colorScheme.secondary.withValues(alpha: 0.8);
+                    }
+                    return null;
+                  }),
+                ),
                 onPressed: () async {
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      title: const Text('Limpar histórico?'),
+                      title: const Text(
+                        'Limpar histórico?',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
                       content: const Text(
                           'Deseja resetar o progresso de todas as receitas? As receitas salvas serão mantidas.'),
                       actions: [
@@ -209,7 +264,12 @@ class _HistoryPageState extends State<HistoryPage> {
                             child: const Text('Cancelar')),
                         TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('Limpar')),
+                            child: Text(
+                              'Limpar',
+                              style: TextStyle(
+                                  color: colorScheme.error,
+                                  fontWeight: FontWeight.bold),
+                            )),
                       ],
                     ),
                   );

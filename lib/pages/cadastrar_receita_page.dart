@@ -19,6 +19,8 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
   Widget build(BuildContext context) {
     final receitaState = context.watch<ReceitaState>();
     final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     final inputDecoration = InputDecoration(
       // estilo das bordas
@@ -29,7 +31,9 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(color: colorScheme.tertiary, width: 3.0),
       ),
-      floatingLabelStyle: TextStyle(color: colorScheme.primary),
+      floatingLabelStyle: TextStyle(
+        color: colorScheme.primary,
+      ),
     );
 
     return Scaffold(
@@ -64,7 +68,8 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
 
                     //cor do texto digitado:
                     style: TextStyle(
-                      color: colorScheme.primary,
+                      color:
+                          isDark ? colorScheme.tertiary : colorScheme.primary,
                       fontSize: 16,
                     ),
 
@@ -75,7 +80,8 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
 
                       // cor do rótulo:
                       labelStyle: TextStyle(
-                        color: colorScheme.primary,
+                        color:
+                            isDark ? colorScheme.tertiary : colorScheme.primary,
                       ),
                     ),
                   ),
@@ -101,7 +107,9 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
 
                         //cor do texto digitado:
                         style: TextStyle(
-                          color: colorScheme.primary,
+                          color: isDark
+                              ? colorScheme.tertiary
+                              : colorScheme.primary,
                           fontSize: 16,
                         ),
 
@@ -112,7 +120,9 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
 
                           // cor do rótulo:
                           labelStyle: TextStyle(
-                            color: colorScheme.primary,
+                            color: isDark
+                                ? colorScheme.tertiary
+                                : colorScheme.primary,
                           ),
                         ),
                       ),
@@ -123,7 +133,9 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
 
                         //cor do texto digitado:
                         style: TextStyle(
-                          color: colorScheme.primary,
+                          color: isDark
+                              ? colorScheme.tertiary
+                              : colorScheme.primary,
                           fontSize: 16,
                         ),
 
@@ -134,7 +146,9 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
 
                           // cor do rótulo:
                           labelStyle: TextStyle(
-                            color: colorScheme.primary,
+                            color: isDark
+                                ? colorScheme.tertiary
+                                : colorScheme.primary,
                           ),
                         ),
                       ),
@@ -147,23 +161,36 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
 
                           //estilos do botão:
                           style: ButtonStyle(
-                            // 1. Cores do Botão (Fundo e Texto)
-                            backgroundColor: WidgetStateProperty.all(
-                                colorScheme.onSecondary),
-                            foregroundColor:
-                                WidgetStateProperty.all(colorScheme.primary),
+                            //Cores do Botão
+                            backgroundColor: WidgetStateProperty.all(isDark
+                                ? colorScheme.primary
+                                : colorScheme.onSecondary),
+                            foregroundColor: WidgetStateProperty.all(isDark
+                                ? colorScheme.tertiary
+                                : colorScheme.primary),
 
-                            // 2. Cores do Hover
+                            // Hover
                             overlayColor:
                                 WidgetStateProperty.resolveWith<Color?>(
                                     (states) {
-                              if (states.contains(WidgetState.hovered)) {
-                                return colorScheme.tertiary
-                                    .withValues(alpha: 0.4);
-                              }
-                              if (states.contains(WidgetState.pressed)) {
-                                return colorScheme.tertiary
-                                    .withValues(alpha: 0.8);
+                              if (isDark) {
+                                if (states.contains(WidgetState.hovered)) {
+                                  return colorScheme.surface
+                                      .withValues(alpha: 0.4);
+                                }
+                                if (states.contains(WidgetState.pressed)) {
+                                  return colorScheme.surface
+                                      .withValues(alpha: 0.8);
+                                }
+                              } else {
+                                if (states.contains(WidgetState.hovered)) {
+                                  return colorScheme.tertiary
+                                      .withValues(alpha: 0.4);
+                                }
+                                if (states.contains(WidgetState.pressed)) {
+                                  return colorScheme.tertiary
+                                      .withValues(alpha: 0.8);
+                                }
                               }
                               return null;
                             }),
@@ -223,7 +250,9 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
                             "Nenhum passo adicionado ainda",
                             //cor do texto
                             style: TextStyle(
-                              color: colorScheme.primary,
+                              color: isDark
+                                  ? colorScheme.error
+                                  : colorScheme.primary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -276,13 +305,13 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
 
                   //estilos do botão:
                   style: ButtonStyle(
-                    // 1. Cores do Botão (Fundo e Texto)
+                    // Cores do Botão
                     backgroundColor:
                         WidgetStateProperty.all(colorScheme.tertiary),
                     foregroundColor:
                         WidgetStateProperty.all(colorScheme.primary),
 
-                    // 2. Cores do Hover
+                    // Hover
                     overlayColor:
                         WidgetStateProperty.resolveWith<Color?>((states) {
                       if (states.contains(WidgetState.hovered)) {

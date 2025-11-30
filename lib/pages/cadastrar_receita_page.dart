@@ -33,6 +33,9 @@ class _CadastrarReceitaPageState extends State<CadastrarReceitaPage> {
       ),
       floatingLabelStyle: TextStyle(
         color: colorScheme.primary,
+        fontSize: 20,
+        fontWeight: FontWeight.w400,
+        backgroundColor: colorScheme.secondary,
       ),
     );
 

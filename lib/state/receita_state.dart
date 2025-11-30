@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/receita_passo.dart';
 import '../models/receita.dart';
 import '../services/database_service.dart';
+import '../services/log_service.dart';
 
 class ReceitaState extends ChangeNotifier {
   List<ReceitaPasso> passosTemp = [];
@@ -16,6 +17,7 @@ class ReceitaState extends ChangeNotifier {
 
   /// Carrega todas as receitas do banco de dados
   Future<void> carregarReceitasDoBancoDados() async {
+    LogService().d("State: Buscando lista de receitas...");
     receitas = await _db.carregarReceitas();
     notifyListeners();
   }
@@ -23,6 +25,7 @@ class ReceitaState extends ChangeNotifier {
   /// Adiciona um passo temporário (durante o cadastro)
   void adicionarPasso(ReceitaPasso passo) {
     passosTemp.add(passo);
+    LogService().d("Passo adicionado temporariamente: ${passo.descricao}");
     notifyListeners();
   }
 
@@ -34,15 +37,20 @@ class ReceitaState extends ChangeNotifier {
 
   /// Salva uma nova receita no banco de dados
   Future<void> salvarReceita(String titulo) async {
-    if (titulo.isEmpty || passosTemp.isEmpty) return;
+    if (titulo.isEmpty || passosTemp.isEmpty) {
+      LogService().w("Tentativa de salvar receita vazia ou sem título.");
+      return;
+    }
 
     final novaReceita = Receita(
       titulo: titulo,
       passos: List.from(passosTemp),
     );
 
+    LogService().i("Usuário solicitou salvar receita: '$titulo'");
+
     final id = await _db.salvarReceita(novaReceita);
-    
+
     // Adiciona à lista com o ID gerado
     receitas.add(
       novaReceita.copyWith(id: id.toInt()),
@@ -59,11 +67,13 @@ class ReceitaState extends ChangeNotifier {
     final receitaDB = await _db.carregarReceitaById(receitaId);
     if (receitaDB != null) {
       receitaEmEdicao = receitaDB;
-      print('DEBUG carregarReceitaParaEdicao: Carregada do BD - ID=$receitaId, dataInicio=${receitaDB.dataInicio}');
+      LogService().i(
+          'Receita carregada para o Contador: "${receitaDB.titulo}" (ID: $receitaId)');
     } else {
       // Fallback: carrega da lista em memória
       receitaEmEdicao = receitas.firstWhere((r) => r.id == receitaId);
-      print('DEBUG carregarReceitaParaEdicao: Carregada da memória - ID=$receitaId, dataInicio=${receitaEmEdicao?.dataInicio}');
+      LogService()
+          .w('Receita ID $receitaId carregada da memória local (Fallback).');
     }
     notifyListeners();
   }
@@ -76,11 +86,12 @@ class ReceitaState extends ChangeNotifier {
     if (receitaEmEdicao == null) return;
 
     final now = DateTime.now();
-    
+
     // Se ainda não tem dataInicio, marca agora como iniciada
     final dataInicio = receitaEmEdicao!.dataInicio ?? now;
-    
-    print('DEBUG atualizarProgressoCompleto: ID=${receitaEmEdicao!.id}, dataInicio=${receitaEmEdicao!.dataInicio}, nova dataInicio=$dataInicio');
+
+    LogService().d(
+        'Atualizando progresso: ID=${receitaEmEdicao!.id}, Passo=$novoPassoAtual, Rep=$repeticoesFeitasNoPasso');
 
     receitaEmEdicao = receitaEmEdicao!.copyWith(
       passoAtual: novoPassoAtual,
@@ -88,7 +99,7 @@ class ReceitaState extends ChangeNotifier {
       dataInicio: dataInicio,
       dataUltimaAtualizacao: now,
     );
-    
+
     if (receitaEmEdicao!.id != null) {
       // Salva tudo no BD de uma vez, inclusive dataInicio
       await _db.atualizarProgresso(
@@ -98,14 +109,14 @@ class ReceitaState extends ChangeNotifier {
         receitaEmEdicao!.concluida,
         dataInicioIso: dataInicio.toIso8601String(),
       );
-      
+
       // Atualiza na lista de receitas imediatamente
       final index = receitas.indexWhere((r) => r.id == receitaEmEdicao!.id);
       if (index != -1) {
         receitas[index] = receitaEmEdicao!;
       }
     }
-    
+
     notifyListeners();
   }
 
@@ -114,20 +125,21 @@ class ReceitaState extends ChangeNotifier {
     final index = receitas.indexWhere((r) => r.id == receitaId);
     if (index != -1) {
       final receita = receitas[index];
+      LogService().i("Receita '${receita.titulo}' marcada como CONCLUÍDA! 🎉");
       receitas[index] = receita.copyWith(
         concluida: true,
         dataUltimaAtualizacao: DateTime.now(),
       );
-      
+
       if (receita.id != null) {
-          await _db.atualizarProgresso(
-            receita.id!,
-            receita.passos.length - 1,
-            receita.repeticoesFeitasNoPasso,
-            true,
-            dataInicioIso: receita.dataInicio?.toIso8601String(),
-          );
-        
+        await _db.atualizarProgresso(
+          receita.id!,
+          receita.passos.length - 1,
+          receita.repeticoesFeitasNoPasso,
+          true,
+          dataInicioIso: receita.dataInicio?.toIso8601String(),
+        );
+
         // Atualiza receitaEmEdicao também
         if (receitaEmEdicao?.id == receitaId) {
           receitaEmEdicao = receitas[index];
@@ -139,6 +151,7 @@ class ReceitaState extends ChangeNotifier {
 
   /// Excluir receita salva
   Future<void> excluirReceita(int receitaId) async {
+    LogService().w("Usuário excluiu a receita ID: $receitaId");
     if (receitaId > 0) {
       await _db.deletarReceita(receitaId);
     }
@@ -149,9 +162,9 @@ class ReceitaState extends ChangeNotifier {
   /// Limpa o histórico: remove receitas do histórico (apaga dataInicio)
   Future<void> limparHistorico() async {
     if (receitas.isEmpty) return;
-    
-    print('DEBUG limparHistorico: Iniciando limpeza...');
-    
+
+    LogService().w("Usuário solicitou LIMPEZA DE HISTÓRICO.");
+
     // Atualiza no BD: reseta dataInicio para todas as receitas
     final db = await _db.database;
     final result = await db.update(
@@ -162,14 +175,13 @@ class ReceitaState extends ChangeNotifier {
       },
       where: 'dataInicio IS NOT NULL',
     );
-    
-    print('DEBUG limparHistorico: $result receitas atualizadas no BD');
-    
+
+    LogService().d('Limpeza concluída: $result receitas atualizadas no BD.');
+
     // Recarrega do BD para garantir sincronização perfeita
     receitas = await _db.carregarReceitas();
     receitaEmEdicao = null;
-    
-    print('DEBUG limparHistorico: Receitas recarregadas. Total=${receitas.length}');
+
     notifyListeners();
   }
 
@@ -178,7 +190,7 @@ class ReceitaState extends ChangeNotifier {
     receitaEmEdicao = null;
     // Recarrega do BD para garantir sincronização
     await carregarReceitasDoBancoDados();
-    print('DEBUG limparReceitaEmEdicao: Receitas recarregadas do BD');
+    LogService().d('Receita em edição limpa e lista recarregada.');
     notifyListeners();
   }
 }

@@ -6,8 +6,10 @@ import 'pages/home_page.dart';
 import 'pages/lista_receitas_page.dart';
 import 'state/counter_app_state.dart';
 import 'state/receita_state.dart';
+import 'services/log_service.dart';
 
 void main() {
+  LogService().i("🧶 Contador Crochê INICIADO!");
   runApp(const MyApp());
 }
 

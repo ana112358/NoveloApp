@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/receita.dart';
 import '../models/receita_passo.dart';
+import 'log_service.dart';
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
@@ -24,6 +25,8 @@ class DatabaseService {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, 'receitas_database.db');
 
+    LogService().d("Abrindo banco de dados em: $path");
+
     return openDatabase(
       path,
       version: 2,
@@ -33,6 +36,8 @@ class DatabaseService {
   }
 
   Future<void> _createDB(Database db, int version) async {
+    LogService().i("Criando tabelas do Banco de Dados (v$version)...");
+
     await db.execute(
       '''
       CREATE TABLE receitas (
@@ -51,15 +56,19 @@ class DatabaseService {
 
   /// Migração do banco de dados
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    LogService().w("Atualizando DB da v$oldVersion para v$newVersion");
+
     if (oldVersion < 2) {
       // Adiciona coluna repeticoesFeitasNoPasso se não existir
       try {
         await db.execute(
           'ALTER TABLE receitas ADD COLUMN repeticoesFeitasNoPasso INTEGER DEFAULT 0',
         );
+        LogService()
+            .i("Migração v2: Coluna repeticoesFeitasNoPasso adicionada.");
       } catch (e) {
         // Coluna já existe, ignorar erro
-        print('Coluna repeticoesFeitasNoPasso já existe: $e');
+        LogService().w("Migração v2: Coluna já existia ou erro ignorável: $e");
       }
     }
   }
@@ -67,24 +76,30 @@ class DatabaseService {
   /// Salva uma nova receita no banco de dados
   /// dataInicio é deixado como NULL inicialmente (será preenchido apenas quando a receita for aberta)
   Future<int> salvarReceita(Receita receita) async {
-    final db = await database;
-    final now = DateTime.now();
-    
-    final result = await db.insert(
-      'receitas',
-      {
-        'titulo': receita.titulo,
-        'passos': jsonEncode(receita.passos.map((p) => p.toMap()).toList()),
-        'passoAtual': receita.passoAtual,
-        'repeticoesFeitasNoPasso': 0,
-        'dataInicio': null, // NULL até que a receita seja de fato aberta/utilizada
-        'dataUltimaAtualizacao': now.toIso8601String(),
-        'concluida': receita.concluida ? 1 : 0,
-      },
-    );
-    
-    print('DEBUG salvarReceita: Receita salva com ID=$result, dataInicio=null');
-    return result;
+    try {
+      final db = await database;
+      final now = DateTime.now();
+
+      final result = await db.insert(
+        'receitas',
+        {
+          'titulo': receita.titulo,
+          'passos': jsonEncode(receita.passos.map((p) => p.toMap()).toList()),
+          'passoAtual': receita.passoAtual,
+          'repeticoesFeitasNoPasso': 0,
+          'dataInicio': null,
+          'dataUltimaAtualizacao': now.toIso8601String(),
+          'concluida': receita.concluida ? 1 : 0,
+        },
+      );
+
+      LogService()
+          .i('Receita salva: "${receita.titulo}" (ID: $result)'); // LOG SUCESSO
+      return result;
+    } catch (e) {
+      LogService().e("Erro ao salvar receita", e); // LOG ERRO
+      rethrow;
+    }
   }
 
   /// Carrega todas as receitas do banco de dados
@@ -92,21 +107,20 @@ class DatabaseService {
     final db = await database;
     final maps = await db.query('receitas');
 
+    LogService().d("Carregando ${maps.length} receitas do banco...");
+
     final receitas = List.generate(maps.length, (i) {
       final dataInicio = maps[i]['dataInicio'] != null
           ? DateTime.parse(maps[i]['dataInicio'] as String)
           : null;
-      
-      if (i == 0) {
-        print('DEBUG carregarReceitas: Primeira receita ID=${maps[i]['id']}, dataInicio=$dataInicio');
-      }
-      
+
       return Receita(
         id: maps[i]['id'] as int?,
         titulo: maps[i]['titulo'] as String,
         passos: _parsePassos(maps[i]['passos'] as String),
         passoAtual: maps[i]['passoAtual'] as int? ?? 0,
-        repeticoesFeitasNoPasso: maps[i]['repeticoesFeitasNoPasso'] as int? ?? 0,
+        repeticoesFeitasNoPasso:
+            maps[i]['repeticoesFeitasNoPasso'] as int? ?? 0,
         dataInicio: dataInicio,
         dataUltimaAtualizacao: maps[i]['dataUltimaAtualizacao'] != null
             ? DateTime.parse(maps[i]['dataUltimaAtualizacao'] as String)
@@ -114,8 +128,7 @@ class DatabaseService {
         concluida: (maps[i]['concluida'] as int? ?? 0) == 1,
       );
     });
-    
-    print('DEBUG carregarReceitas: Total de ${receitas.length} receitas carregadas');
+
     return receitas;
   }
 
@@ -139,10 +152,10 @@ class DatabaseService {
 
     if (dataInicioIso != null) {
       updateMap['dataInicio'] = dataInicioIso;
-      print('DEBUG atualizarProgresso: ID=$receitaId, dataInicio=$dataInicioIso será salvo');
-    } else {
-      print('DEBUG atualizarProgresso: ID=$receitaId, dataInicio NÃO será alterado');
     }
+
+    LogService().d(
+        'Atualizando ID=$receitaId: Passo $passoAtual, Rep $repeticoesFeitasNoPasso, Concluída: $concluida');
 
     return db.update(
       'receitas',
@@ -155,7 +168,9 @@ class DatabaseService {
   /// Deleta uma receita do banco de dados
   Future<int> deletarReceita(int receitaId) async {
     final db = await database;
-    
+
+    LogService().w("Deletando receita ID: $receitaId");
+
     return db.delete(
       'receitas',
       where: 'id = ?',
@@ -172,7 +187,10 @@ class DatabaseService {
       whereArgs: [receitaId],
     );
 
-    if (maps.isEmpty) return null;
+    if (maps.isEmpty) {
+      LogService().w("Busca por ID $receitaId não encontrou nada.");
+      return null;
+    }
 
     final map = maps.first;
     return Receita(
@@ -199,6 +217,7 @@ class DatabaseService {
           .map((p) => ReceitaPasso.fromMap(p as Map<String, dynamic>))
           .toList();
     } catch (e) {
+      LogService().e("Erro crítico ao converter JSON dos passos", e);
       return [];
     }
   }
@@ -208,11 +227,13 @@ class DatabaseService {
     final db = await database;
     await db.close();
     _database = null;
+    LogService().i("Conexão com Banco de Dados encerrada.");
   }
 
   /// Deleta todas as receitas do banco de dados
   Future<int> deletarTodasReceitas() async {
     final db = await database;
+    LogService().w("ATENÇÃO: Todas as receitas estão sendo apagadas!");
     return db.delete('receitas');
   }
 }

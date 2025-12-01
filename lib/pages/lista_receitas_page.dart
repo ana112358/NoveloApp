@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/receita_state.dart';
 import '../state/counter_app_state.dart';
-import '../models/receita_passo.dart';
 
 class ListaReceitasPage extends StatelessWidget {
   const ListaReceitasPage({super.key});

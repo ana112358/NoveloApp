@@ -214,76 +214,36 @@ class CounterPage extends StatelessWidget {
                         horizontal: 20, vertical: 10)),
                   ),
                 ),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    // Salva e sai da tela
-                    await receitaState.atualizarProgressoCompleto(
-                      appState.currentStepIndex,
-                      appState.repeticoesFeitasNoPasso,
-                    );
-                    await receitaState.limparReceitaEmEdicao();
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                    }
-                  },
-                  icon: const Icon(Icons.exit_to_app),
-                  label: const Text("Sair"),
-                  style: ButtonStyle(
-                    // cores do botão
-                    backgroundColor: WidgetStateProperty.all(
-                        isDark ? colorScheme.surface : colorScheme.secondary),
-                    foregroundColor:
-                        WidgetStateProperty.all(colorScheme.primary),
-
-                    // cores do hover
-                    overlayColor:
-                        WidgetStateProperty.resolveWith<Color?>((states) {
-                      if (states.contains(WidgetState.hovered)) {
-                        return isDark
-                            ? colorScheme.surface.withValues(alpha: 0.4)
-                            : colorScheme.tertiary.withValues(alpha: 0.4);
-                      }
-                      if (states.contains(WidgetState.pressed)) {
-                        return isDark
-                            ? colorScheme.surface.withValues(alpha: 0.8)
-                            : colorScheme.tertiary.withValues(alpha: 0.8);
-                      }
-                      return null;
-                    }),
-
-                    padding: WidgetStateProperty.all(const EdgeInsets.symmetric(
-                        horizontal: 25, vertical: 10)),
-                  ),
-                ),
               ],
             ),
           ),
           Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    appState.currentRecipeTitle,
-                    style: TextStyle(
-                        fontSize: 32,
-                        color: colorScheme.error,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Passo atual:",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color:
-                          isDark ? colorScheme.tertiary : colorScheme.primary,
+            child: SingleChildScrollView(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      appState.currentRecipeTitle,
+                      style: TextStyle(
+                          fontSize: 32,
+                          color: colorScheme.error,
+                          fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    passoAtual.descricao,
-                    style: TextStyle(
+                    const SizedBox(height: 16),
+                    Text(
+                      "Passo atual:",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            isDark ? colorScheme.tertiary : colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      passoAtual.descricao,
+                      style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color:
@@ -467,10 +427,11 @@ class CounterPage extends StatelessWidget {
                             ),
                           ),
                         ],
-                      ),
                     ),
+                  ),
                 ],
               ),
+            ),
             ),
           ),
           Padding(
